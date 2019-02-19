@@ -1,0 +1,31 @@
+{
+  "root": true,
+  "env": {
+    "node": true
+  },
+  "extends": [
+    "plugin:vue/recommended",
+    "@vue/airbnb"
+  ],
+  "rules": {
+    "no-console": "off",
+    "quotes": [
+      "warn",
+      "double"
+    ],
+    "max-len": [
+      "error",
+      75
+    ],
+    "no-plusplus": "off",
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": true
+      }
+    ]
+  },
+  "parserOptions": {
+    "parser": "babel-eslint"
+  }
+}
