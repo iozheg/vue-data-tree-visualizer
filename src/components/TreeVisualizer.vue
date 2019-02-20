@@ -1,7 +1,7 @@
 <script>
 import * as PIXI from "pixi.js";
 import BinaryTree from "./binaryTree/binaryTree";
-// import TreeLevel from "./TreeLevel.vue";
+import initPixiMouseController from "./MouseController";
 
 export default {
   name: "TreeVisualizer",
@@ -13,10 +13,13 @@ export default {
       traversal: [],
       pixiApp: undefined,
       nodesAmount: 30,
-      treeNodeWidth: 30,
-      treeNodeHeight: 30,
+      treeNodeWidth: 15,
+      treeNodeHeight: 15,
       verticalMargin: 50,
-      minIndent: 20,
+      minIndent: 5,
+      fontSize: 10,
+      startMousePosition: {},
+      isDragMode: false,
     };
   },
 
@@ -39,13 +42,21 @@ export default {
 
   methods: {
     initCanvas() {
-      const sceneWidth = 1500;
-      const sceneHeight = 800;
+      const sceneWidth = 1000;
+      const sceneHeight = 600;
       this.pixiApp = new PIXI.Application({
         width: sceneWidth,
         height: sceneHeight,
+        antialias: true,
         transparent: true,
       });
+      const { stage } = this.pixiApp;
+
+      initPixiMouseController(
+        stage,
+        new PIXI.Rectangle(0, 0, sceneWidth, sceneHeight),
+      );
+
       this.$el.appendChild(this.pixiApp.view);
 
       this.preOrderTraversal(
@@ -68,7 +79,7 @@ export default {
       nodeFigure.position.set(startPosX, startPosY);
       this.pixiApp.stage.addChild(nodeFigure);
 
-      const valueText = new PIXI.Text(value);
+      const valueText = new PIXI.Text(value, { fontSize: this.fontSize });
       valueText.position.set(x - valueText.width / 2, y);
       this.pixiApp.stage.addChild(valueText);
     },
@@ -121,9 +132,8 @@ export default {
 </template>
 
 <style>
-#example {
-  height: 800px;
-  width: 1024px;
-  border: 1px black solid;
+.tree-visualizer {
+  height: 100%;
+  width: 100%;
 }
 </style>
