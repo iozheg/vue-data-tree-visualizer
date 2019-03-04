@@ -31,6 +31,9 @@ export default function initPixiMouseController(container, hitArea) {
   container.on("pointerup", (e) => {
     isDragMode = false;
   });
+  container.on("pointerout", (e) => {
+    isDragMode = false;
+  });
   container.on("pointermove", (e) => {
     if (isDragMode) {
       tranform(
