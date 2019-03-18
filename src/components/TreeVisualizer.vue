@@ -12,11 +12,11 @@ export default {
       binaryTree: new BinaryTree(),
       traversal: [],
       pixiApp: undefined,
-      nodesAmount: 30,
-      treeNodeWidth: 15,
-      treeNodeHeight: 15,
+      nodesAmount: 20,
+      treeNodeWidth: 35,
+      treeNodeHeight: 25,
       verticalMargin: 50,
-      minIndent: 5,
+      minIndent: 10,
       fontSize: 10,
       startMousePosition: {},
       isDragMode: false,
@@ -42,21 +42,20 @@ export default {
 
   methods: {
     initCanvas() {
-      const sceneWidth = 1000;
-      const sceneHeight = 600;
+      const { width: sceneWidth, height: sceneHeight } = this.$el
+        .getBoundingClientRect();
+      // const sceneWidth = 1000;
+      // const sceneHeight = 600;
       this.pixiApp = new PIXI.Application({
         width: sceneWidth,
         height: sceneHeight,
-        antialias: true,
+        autoResize: true,
+        // antialias: true,
+        forceFXAA: true,
         transparent: true,
       });
-      const { stage } = this.pixiApp;
-
-      initPixiMouseController(
-        stage,
-        new PIXI.Rectangle(0, 0, sceneWidth, sceneHeight),
-      );
-
+      // const { stage } = this.pixiApp;
+      this.controlableContainer = new PIXI.Container();
       this.$el.appendChild(this.pixiApp.view);
 
       this.preOrderTraversal(
@@ -65,6 +64,37 @@ export default {
         0,
         this.minIndent * (2 ** this.binaryTree.maxLevel) / 2,
       );
+
+      this.pixiApp.stage.addChild(this.controlableContainer);
+
+      /** Draw container border. */
+      // const border = new PIXI.Graphics();
+      // border.lineStyle(1, 0xFF3300, 1);
+      // border.drawRect(
+      //   0, 0,
+      //   this.controlableContainer.width, this.controlableContainer.height,
+      // );
+      // this.controlableContainer.addChild(border);
+
+
+      initPixiMouseController(
+        this.pixiApp.stage,
+        this.controlableContainer,
+        this.$el,
+        new PIXI.Rectangle(
+          0, 0, sceneWidth, sceneHeight,
+        ),
+      );
+    },
+
+    drawCircle(x, y, radius = 10) {
+      const circleFigure = new PIXI.Graphics();
+      circleFigure.lineStyle(1, 0xFF3300, 1);
+      circleFigure.beginFill(0xFF0000);
+      circleFigure.drawCircle(0, 0, radius);
+      circleFigure.endFill();
+      circleFigure.position.set(x, y);
+      this.controlableContainer.addChild(circleFigure);
     },
 
     drawNode(x, y, value) {
@@ -77,11 +107,19 @@ export default {
       nodeFigure.drawRect(0, 0, this.treeNodeWidth, this.treeNodeHeight);
       nodeFigure.endFill();
       nodeFigure.position.set(startPosX, startPosY);
-      this.pixiApp.stage.addChild(nodeFigure);
+      this.controlableContainer.addChild(nodeFigure);
 
       const valueText = new PIXI.Text(value, { fontSize: this.fontSize });
       valueText.position.set(x - valueText.width / 2, y);
-      this.pixiApp.stage.addChild(valueText);
+      this.controlableContainer.addChild(valueText);
+
+      /** Draw coords. */
+      // const coordText = new PIXI.Text(
+      //   `${x} ${y}`,
+      //   { fontSize: this.fontSize },
+      // );
+      // coordText.position.set(x - coordText.width / 2, y+10);
+      // this.controlableContainer.addChild(coordText);
     },
 
     drawLine(x1, y1, x2, y2) {
@@ -89,7 +127,7 @@ export default {
       lineObject.lineStyle(1, 0xFF3300, 1);
       lineObject.moveTo(x1, y1);
       lineObject.lineTo(x2, y2);
-      this.pixiApp.stage.addChild(lineObject);
+      this.controlableContainer.addChild(lineObject);
     },
 
     preOrderTraversal(current, xPosition, yPosition, indent) {
@@ -135,5 +173,7 @@ export default {
 .tree-visualizer {
   height: 100%;
   width: 100%;
+  border: 1px solid gray;
+  overflow: hidden;
 }
 </style>
