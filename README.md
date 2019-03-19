@@ -1,4 +1,6 @@
-# vuetreefy
+# vue-data-tree-visualizer
+
+Project is under construction.
 
 ## Project setup
 ```
