@@ -5,7 +5,6 @@ import initPixiMouseController from "./MouseController";
 
 export default {
   name: "TreeVisualizer",
-  // components: { TreeLevel },
   data() {
     return {
       array: [],
@@ -16,7 +15,8 @@ export default {
       treeNodeWidth: 35,
       treeNodeHeight: 25,
       verticalMargin: 50,
-      minIndent: 10,
+      minIndent: 30,
+      maxIndent: 0,
       fontSize: 10,
       startMousePosition: {},
       isDragMode: false,
@@ -33,8 +33,6 @@ export default {
     }
     console.log(this.array);
     console.log(this.binaryTree);
-
-    // this.traversal = this.binaryTree.preOrderTraversal();
     console.log(this.traversal);
 
     this.initCanvas();
@@ -44,13 +42,11 @@ export default {
     initCanvas() {
       const { width: sceneWidth, height: sceneHeight } = this.$el
         .getBoundingClientRect();
-      // const sceneWidth = 1000;
-      // const sceneHeight = 600;
       this.pixiApp = new PIXI.Application({
         width: sceneWidth,
         height: sceneHeight,
         autoResize: true,
-        // antialias: true,
+        antialias: true,
         forceFXAA: true,
         transparent: true,
       });
@@ -62,6 +58,8 @@ export default {
         this.binaryTree.root,
         sceneWidth / 2,
         0,
+        sceneWidth / 2,
+        -this.treeNodeHeight,
         this.minIndent * (2 ** this.binaryTree.maxLevel) / 2,
       );
 
@@ -72,7 +70,8 @@ export default {
       // border.lineStyle(1, 0xFF3300, 1);
       // border.drawRect(
       //   0, 0,
-      //   this.controlableContainer.width, this.controlableContainer.height,
+      //   this.controlableContainer.width,
+      //   this.controlableContainer.height,
       // );
       // this.controlableContainer.addChild(border);
 
@@ -97,14 +96,27 @@ export default {
       this.controlableContainer.addChild(circleFigure);
     },
 
-    drawNode(x, y, value) {
+    /**
+     * Draw node and line from parent's bottom to current's top.
+     * @property {number} x current node x.
+     * @property {number} y current node y.
+     * @property {number} parentX parent node x.
+     * @property {number} parentY parent node y.
+     * @property {number} value value to display.
+     */
+    drawNode(x, y, parentX, parentY, value) {
       const startPosX = x - this.treeNodeWidth / 2;
       const startPosY = y;
 
       const nodeFigure = new PIXI.Graphics();
       nodeFigure.lineStyle(1, 0xFF3300, 1);
       nodeFigure.beginFill(0x66CCFF);
-      nodeFigure.drawRect(0, 0, this.treeNodeWidth, this.treeNodeHeight);
+      nodeFigure.drawEllipse(
+        this.treeNodeWidth / 2,
+        this.treeNodeHeight / 2,
+        this.treeNodeWidth / 2,
+        this.treeNodeHeight / 2,
+      );
       nodeFigure.endFill();
       nodeFigure.position.set(startPosX, startPosY);
       this.controlableContainer.addChild(nodeFigure);
@@ -112,6 +124,8 @@ export default {
       const valueText = new PIXI.Text(value, { fontSize: this.fontSize });
       valueText.position.set(x - valueText.width / 2, y);
       this.controlableContainer.addChild(valueText);
+
+      this.drawLine(parentX, parentY + this.treeNodeHeight, x, y);
 
       /** Draw coords. */
       // const coordText = new PIXI.Text(
@@ -130,34 +144,42 @@ export default {
       this.controlableContainer.addChild(lineObject);
     },
 
-    preOrderTraversal(current, xPosition, yPosition, indent) {
-      this.drawNode(xPosition, yPosition, current.value);
+    /**
+     * Get next node, draw it and go to it's children.
+     * @property {BinaryTreeNode} current current node.
+     * @property {number} currentX current node x.
+     * @property {number} currentY current node y.
+     * @property {number} parentX parent node x.
+     * @property {number} parentY parent node y.
+     * @property {number} indentByX indent by x for current node.
+     */
+    preOrderTraversal(
+      current, currentX, currentY, parentX, parentY, indentByX,
+    ) {
+      // If one or zero child - decrease indent.
+      const hasBothChilds = current.leftChild && current.rightChild;
+      const adoptedIndentByX = hasBothChilds ? indentByX : indentByX / 2;
 
-      const nodeBottomY = yPosition + this.treeNodeHeight;
-      const childNodeTopY = nodeBottomY + this.verticalMargin;
+      this.drawNode(currentX, currentY, parentX, parentY, current.value);
+
       if (current.leftChild) {
-        this.drawLine(
-          xPosition, nodeBottomY, xPosition - indent, childNodeTopY,
-        );
-
         this.preOrderTraversal(
           current.leftChild,
-          xPosition - indent,
-          childNodeTopY,
-          indent / 2,
+          currentX - adoptedIndentByX,
+          currentY + this.verticalMargin,
+          currentX,
+          currentY,
+          indentByX / 2,
         );
       }
-
       if (current.rightChild) {
-        this.drawLine(
-          xPosition, nodeBottomY, xPosition + indent, childNodeTopY,
-        );
-
         this.preOrderTraversal(
           current.rightChild,
-          xPosition + indent,
-          childNodeTopY,
-          indent / 2,
+          currentX + adoptedIndentByX,
+          currentY + this.verticalMargin,
+          currentX,
+          currentY,
+          indentByX / 2,
         );
       }
     },
