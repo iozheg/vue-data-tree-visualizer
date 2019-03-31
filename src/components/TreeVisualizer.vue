@@ -54,15 +54,7 @@ export default {
       this.controlableContainer = new PIXI.Container();
       this.$el.appendChild(this.pixiApp.view);
 
-      this.preOrderTraversal(
-        this.binaryTree.root,
-        sceneWidth / 2,
-        0,
-        sceneWidth / 2,
-        -this.treeNodeHeight,
-        this.minIndent * (2 ** this.binaryTree.maxLevel) / 2,
-      );
-
+      this.drawTree();
       this.pixiApp.stage.addChild(this.controlableContainer);
 
       /** Draw container border. */
@@ -84,6 +76,26 @@ export default {
           0, 0, sceneWidth, sceneHeight,
         ),
       );
+    },
+
+    drawTree() {
+      const { width: sceneWidth } = this.$el
+        .getBoundingClientRect();
+
+      this.preOrderTraversal(
+        this.binaryTree.root,
+        sceneWidth / 2,
+        0,
+        sceneWidth / 2,
+        -this.treeNodeHeight,
+        this.minIndent * (2 ** this.binaryTree.maxLevel) / 2,
+      );
+    },
+
+    clearScene() {
+      while (this.controlableContainer.children.length > 0) {
+        this.controlableContainer.children[0].destroy(true);
+      }
     },
 
     drawCircle(x, y, radius = 10) {
